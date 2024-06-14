@@ -2,7 +2,7 @@
   "engines": {
     "node": ">=20.6.0"
   },
-  "name": "biteadvisor-server",
+  "name": "idtrust-server",
   "version": "1.0.0",
   "main": "dist/index.js",
   "type": "module",
