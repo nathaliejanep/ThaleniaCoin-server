@@ -1,4 +1,4 @@
-import { SHA256 } from 'crypto-js';
+// import { SHA256 } from 'crypto-js'; // BUG something wrong here
 import { GENESIS_DATA } from '../config/settings.js';
 import IBlock from '../interfaces/IBlock.js';
 class Block implements IBlock {
@@ -56,13 +56,14 @@ class Block implements IBlock {
   static mineBlock(lastBlock: any, data: any) {}
 
   private calculateHash() {
-    return SHA256(
-      this.index +
-        this.previousHash +
-        this.timestamp +
-        JSON.stringify(this.transactions) +
-        this.nonce
-    ).toString();
+    return 'TO';
+    //   return SHA256(
+    //     this.index +
+    //       this.previousHash +
+    //       this.timestamp +
+    //       JSON.stringify(this.transactions) +
+    //       this.nonce
+    //   ).toString();
   }
 }
 export default Block;
