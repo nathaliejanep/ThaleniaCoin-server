@@ -4,9 +4,9 @@ import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { generateKeyPair } from '../utils/securityUtils.js';
-
 const { publicKey, privateKey } = generateKeyPair();
 
+// https://medieinstitutet.sharepoint.com/sites/BCU23D/_layouts/15/stream.aspx?id=%2Fsites%2FBCU23D%2FDelade%20dokument%2F07%20Blockkedja%20f%C3%B6r%20backend%20NodeJS%20och%20blockkedja%2FRecordings%2FBlockkedja%20backend%5F%20Nodejs%20och%20blockkedja%2D20240611%5F102332%2DM%C3%B6tesinspelning%201%2Emp4&referrer=StreamWebApp%2EWeb&referrerScenario=AddressBarCopied%2Eview%2Edc5b83bf%2Dc490%2D479a%2Db524%2D403c89d0ebc5
 const UserSchema = new Schema<IUser>({
   name: {
     type: String,
@@ -56,7 +56,7 @@ const UserSchema = new Schema<IUser>({
     type: Date,
     default: Date.now,
   },
-  // TODO - Check how to use this
+  // RECHECK - Check how to use this
   authTokens: [
     {
       authToken: { type: String, required: true },
@@ -84,12 +84,12 @@ UserSchema.methods.generateAuthToken = async function () {
 
   this.authTokens = this.authTokens.concat({ authToken: token });
 
-  await this.save(); // TODO - Check if we should do this
+  // await this.save(); // RECHECK - Check if we should do this
   return token;
 };
 
 // https://medium.com/@sherief.elsowiny/adding-password-reset-to-our-authentication-service-d0b5408a629e
-// TODO - Test if that works if I have time
+// RECHECK - Test if that works if I have time
 UserSchema.methods.generateResetPwToken = function () {
   const token = crypto.randomBytes(20).toString('hex');
   this.resetPasswordToken = crypto

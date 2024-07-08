@@ -21,12 +21,19 @@ const registerUser = asyncHandler(
       return next(new BaseError('Email is already registered', 400));
     }
 
+    if (password.length < 8) {
+      return next(
+        new BaseError('Password must be at least 8 characters long', 400)
+      );
+    }
+
     const newUser = await User.create({ name, email, password, role });
 
     sendToken(newUser, 201, res);
   }
 );
 
+// TODO check if error is shown for user that password not long enough etc
 const loginUser = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const { email, password } = req.body;
@@ -42,17 +49,16 @@ const loginUser = asyncHandler(
 
       !isValid
         ? next(new BaseError('Incorrect email and/or password', 401))
-        : sendToken(user, 200, res);
+        : await sendToken(user, 200, res);
 
       req.currentUser = user;
-      console.log(req.currentUser);
     }
   }
 );
 
 const getMe = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
-    // TODO - Check if we need populate and how to send req.user.id
+    // FIXME - Check if we need populate and how to send req.user.id
     const id = req.currentUser;
 
     if (!id) {
@@ -97,12 +103,11 @@ const requestPasswordReset = asyncHandler(
       createdAt: Date.now(),
     }).save();
 
-    // TODO - Make sure link works
     const link = `${req.protocol}://${req.get(
       'host'
     )}/api/v1/auth/resetPassword?token=${resetToken}&id=${user._id}`;
 
-    //TODO - Send email
+    //TODO - Send email IRL
     sendEmail({
       recipient: user.email,
       subject: 'Password Reset Request',
@@ -125,7 +130,7 @@ const resetPassword = asyncHandler(
     if (!passwordResetToken) {
       next(new BaseError('Invalid or expired reset token', 400));
     }
-    // TODO - Keep it DRY, using this in user.model too
+    // OPTIMIZE - Keep it DRY, using this in user.model too
     const isValid = await bcrypt.compare(
       token as string,
       passwordResetToken?.token as string
@@ -134,7 +139,7 @@ const resetPassword = asyncHandler(
     console.log(passwordResetToken?.token);
     !isValid && next(new BaseError('Invalid or expired reset token', 400));
 
-    // TODO - Keep it DRY, might be using this in other files
+    // OPTIMIZE - Keep it DRY, might be using this in other files
     const hash = await bcrypt.hash(password, Number(process.env.BCRYPT_SALT));
 
     await User.updateOne(
@@ -151,7 +156,7 @@ const resetPassword = asyncHandler(
   }
 );
 
-// Update User
-// Update Password
+// TODO - Update User
+// TODO - Update Password
 
 export { getMe, loginUser, registerUser, resetPassword, requestPasswordReset };
