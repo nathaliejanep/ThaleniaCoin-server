@@ -1,6 +1,5 @@
 import Pubnub, { PubnubConfig } from 'pubnub';
 import dotenv from 'dotenv';
-import { channel } from 'diagnostics_channel';
 
 dotenv.config();
 

@@ -6,16 +6,17 @@ const CORS_OPTIONS = {
   origin: ['http://localhost:5173'],
 };
 
-const INITIAL_DIFFICULTY = 3;
+const MINE_RATE = 1000;
+const DIFFICULTY = 3;
 
 const GENESIS_DATA: IBlock = {
   timestamp: 1,
   index: 0,
-  transactions: ['genesis block'],
+  data: ['genesis block'],
   previousHash: '0',
   hash: '0',
   nonce: 0,
-  difficulty: +INITIAL_DIFFICULTY,
+  difficulty: +DIFFICULTY,
 };
 
-export { CORS_OPTIONS, GENESIS_DATA };
+export { MINE_RATE ,CORS_OPTIONS, GENESIS_DATA, DIFFICULTY };

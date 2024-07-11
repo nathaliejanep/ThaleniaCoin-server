@@ -3,9 +3,9 @@ interface IBlock {
   index: number;
   previousHash: string;
   hash: string;
+  data: Array<any>;
   nonce: number;
   difficulty: number;
-  transactions: Array<any>;
 
   toString(): string;
 }

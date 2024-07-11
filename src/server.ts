@@ -6,7 +6,7 @@ import authRouter from './routes/auth-routes.js';
 import errorHandler from './middleware/ErrorHandler.js';
 import morgan from 'morgan';
 import { CORS_OPTIONS } from './config/settings.js';
-import Blockchain from './models/BlockchainModel.js';
+import Blockchain from './models/Blockchain.js';
 import PubNubServer from './pubnubServer.js';
 
 dotenv.config();
