@@ -3,11 +3,12 @@ import cors from 'cors';
 import connectDb from './config/mongoDb.js';
 import dotenv from 'dotenv';
 import authRouter from './routes/auth-routes.js';
-import errorHandler from './middleware/ErrorHandler.js';
+import ErrorHandler from './middleware/ErrorHandler.js';
 import morgan from 'morgan';
 import { CORS_OPTIONS } from './config/settings.js';
 import Blockchain from './models/Blockchain.js';
 import PubNubServer from './pubnubServer.js';
+import { BaseError } from './models/BaseErrorModel.js';
 
 dotenv.config();
 
@@ -31,7 +32,11 @@ app.use(morgan('dev'));
 
 app.use('/api/v1/auth', authRouter);
 
-app.use(errorHandler);
+app.all('*', (req, res, next) => {
+  next(new BaseError(`Could not find the resource: ${req.originalUrl}`, 404));
+});
+
+app.use(ErrorHandler);
 
 // app.use('/api/v1/users',usersRouter)
 // app.use('/api/v1/auth',authRouter)

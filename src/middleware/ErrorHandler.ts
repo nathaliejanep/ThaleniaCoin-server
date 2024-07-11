@@ -6,7 +6,7 @@ import {
 } from '../models/BaseErrorModel.js';
 
 // error handler middleware
-const errorHandler = (
+const ErrorHandler = (
   err: BaseError,
   req: Request,
   res: Response,
@@ -55,4 +55,4 @@ const errorHandler = (
   }
 };
 
-export default errorHandler;
+export default ErrorHandler;
