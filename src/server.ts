@@ -3,6 +3,9 @@ import cors from 'cors';
 import connectDb from './config/mongoDb.js';
 import dotenv from 'dotenv';
 import authRouter from './routes/auth-routes.js';
+import blockchainRouter from './routes/blockchain-routes.js';
+import transactionRouter from './routes/transaction-routes.js';
+import pubnubRouter from './routes/pubnub-routes.js';
 import ErrorHandler from './middleware/ErrorHandler.js';
 import morgan from 'morgan';
 import { CORS_OPTIONS } from './config/settings.js';
@@ -30,7 +33,11 @@ app.use(urlencoded({ extended: true }));
 app.use(express.json());
 app.use(morgan('dev'));
 
+// FIXME endpoint name /api/v1/<name>/
 app.use('/api/v1/auth', authRouter);
+app.use('/api/v1/blockchain', blockchainRouter);
+app.use('/api/v1/transactions', transactionRouter);
+app.use('/api/v1/nodes', pubnubRouter);
 
 app.all('*', (req, res, next) => {
   next(new BaseError(`Could not find the resource: ${req.originalUrl}`, 404));
@@ -38,9 +45,6 @@ app.all('*', (req, res, next) => {
 
 app.use(ErrorHandler);
 
-// app.use('/api/v1/users',usersRouter)
-// app.use('/api/v1/auth',authRouter)
-// app.use('/api/v1/auth',authRouter)
 connectDb();
 
 const syncBlockchain = async () => {

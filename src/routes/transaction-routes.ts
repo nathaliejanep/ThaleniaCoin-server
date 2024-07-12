@@ -8,7 +8,7 @@ import {
 const router = express.Router();
 
 router.route('/').get(getTransactions);
-router.route('/:txId').get(getTransactionById);
+router.route('/:id').get(getTransactionById);
 router.route('/add').post(createTransaction);
 
 export default router;

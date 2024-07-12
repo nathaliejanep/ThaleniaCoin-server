@@ -45,11 +45,11 @@ const getTransactionById = (
   next: NextFunction
 ) => {
   try {
-    const { txId } = req.params;
+    const { id } = req.params;
     let transaction;
 
     for (let block of blockchain.chain) {
-      return (transaction = block.data.find((tx) => tx.id === txId));
+      return (transaction = block.data.find((tx) => tx.id === id));
     }
 
     res.status(200).json({ success: true, statusCode: 200, data: transaction });

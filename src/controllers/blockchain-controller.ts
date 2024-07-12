@@ -19,20 +19,22 @@ const getBlockById = async (
   next: NextFunction
 ) => {
   try {
-    const { index } = req.params;
-    const block = blockchain.chain.find((block) => block.index === +index);
+    // RECHECK  index, or id???
+    const { id } = req.params;
+    const block = blockchain.chain.find((block) => block.index === +id);
 
     if (block) {
       res.status(200).json({ success: true, statusCode: 200, data: block });
     } else {
       // TODO check if next works like this, maybe if else is redundant
-      next(new NotFoundError(index));
+      next(new NotFoundError(id));
     }
   } catch (err) {
     next(new BaseError(`Error getting block: ${req.body}`, 500));
   }
 };
 
+// RECHECK not sure we need this?
 const getLastBlock = async (
   req: Request,
   res: Response,
