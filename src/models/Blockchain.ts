@@ -79,7 +79,7 @@ class Blockchain implements IBlockchain {
   }
 
   isValidChain(chain: Block[]): boolean {
-    if (JSON.stringify(chain.at(0)) !== JSON.stringify(Block.genesis)) {
+    if (JSON.stringify(chain[0]) !== JSON.stringify(Block.genesis)) {
       return false;
     }
 
@@ -109,7 +109,6 @@ class Blockchain implements IBlockchain {
   replaceChain(newChain: Block[]): void {
     if (newChain.length <= this.chain.length) return;
     if (!this.isValidChain(newChain)) return;
-
     this.chain = newChain;
   }
 

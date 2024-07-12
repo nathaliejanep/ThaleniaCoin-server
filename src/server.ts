@@ -39,22 +39,21 @@ app.use('/api/v1/blockchain', blockchainRouter);
 app.use('/api/v1/transactions', transactionRouter);
 app.use('/api/v1/nodes', pubnubRouter);
 
+app.use(ErrorHandler);
+
 app.all('*', (req, res, next) => {
   next(new BaseError(`Could not find the resource: ${req.originalUrl}`, 404));
 });
 
-app.use(ErrorHandler);
-
 connectDb();
-
 const syncBlockchain = async () => {
   try {
     // FIXME change name and change routes after
-    const response = await fetch(`${ROOT_NODE}/api/v1/idtrust/blockchain`);
+    const response = await fetch(`${ROOT_NODE}/api/v1/blockchain`);
 
     if (response.ok) {
       const { data } = await response.json();
-      // blockchain.updateChain(data);
+      blockchain.replaceChain(data);
     } else {
       console.error('Failed to sync blockchain: Server response not OK');
     }
@@ -63,8 +62,8 @@ const syncBlockchain = async () => {
   }
 };
 
-const server = app.listen(PORT, () => {
-  console.log(`Server is listening at port ${PORT}`);
+const server = app.listen(NODE_PORT, () => {
+  console.log(`Server is listening at port ${NODE_PORT}`);
   if (NODE_PORT !== PORT) {
     syncBlockchain();
   }
