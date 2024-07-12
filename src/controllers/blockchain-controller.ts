@@ -4,16 +4,20 @@ import { BaseError, NotFoundError } from '../models/BaseErrorModel.js';
 
 const addBlock = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const data = await blockchain.createBlock();
+    const block = await blockchain.createBlock();
     pubnub.broadcast();
 
-    res.status(201).json({ success: true, statusCode: 201, data });
+    res.status(201).json({ success: true, statusCode: 201, data: block });
   } catch (err) {
     next(new BaseError(`Error adding block: ${req.body}`, 500));
   }
 };
 
-const getBlock = async (req: Request, res: Response, next: NextFunction) => {
+const getBlockById = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { index } = req.params;
     const block = blockchain.chain.find((block) => block.index === +index);
@@ -21,7 +25,7 @@ const getBlock = async (req: Request, res: Response, next: NextFunction) => {
     if (block) {
       res.status(200).json({ success: true, statusCode: 200, data: block });
     } else {
-      // TODO check if next works like this
+      // TODO check if next works like this, maybe if else is redundant
       next(new NotFoundError(index));
     }
   } catch (err) {
@@ -62,4 +66,4 @@ const getBlockchain = async (
   }
 };
 
-export { addBlock, getBlock, getLastBlock, getBlockchain };
+export { addBlock, getBlockById, getLastBlock, getBlockchain };

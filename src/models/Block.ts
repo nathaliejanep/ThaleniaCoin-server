@@ -1,4 +1,3 @@
-// import { SHA256 } from 'crypto-js'; // BUG something wrong here
 import { DIFFICULTY, GENESIS_DATA } from '../config/settings.js';
 import IBlock from '../interfaces/IBlock.js';
 class Block implements IBlock {
@@ -40,7 +39,6 @@ class Block implements IBlock {
     `;
   }
 
-  // LEARN delve into get
   // static get genesis(): Block {
   //   return new this(
   //     GENESIS_DATA.timestamp,
@@ -55,6 +53,7 @@ class Block implements IBlock {
 
   static mineBlock(lastBlock: any, data: any) {}
 
+  // LEARN delve into get
   static genesis() {
     return new Block(Date.now(), 0, '0', 'genesis-hash', [], 0, DIFFICULTY);
   }

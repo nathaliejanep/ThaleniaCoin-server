@@ -5,7 +5,7 @@ import Block from './Block.js';
 
 class Blockchain implements IBlockchain {
   chain: Block[];
-  pendingTransactions: [];
+  pendingTransactions: any[];
 
   constructor() {
     this.chain = [Block.genesis()];
@@ -14,6 +14,12 @@ class Blockchain implements IBlockchain {
     // this.currentTransactions =[];
     // this.nodes =[]
     // this.io=io
+  }
+
+  addTransaction(transaction: any): number {
+    this.pendingTransactions.push(transaction);
+    // TODO should this really return?
+    return this.getPrevBlock().index + 1;
   }
 
   async createBlock(): Promise<Block> {
@@ -37,6 +43,16 @@ class Blockchain implements IBlockchain {
     this.chain.push(newBlock);
     this.pendingTransactions = [];
     return newBlock;
+  }
+
+  getTransactions(): any[] {
+    let transactions = [];
+    for (let block of this.chain) {
+      for (let transaction of block.data) {
+        transactions.push(transaction);
+      }
+    }
+    return transactions;
   }
 
   // mineBlock
