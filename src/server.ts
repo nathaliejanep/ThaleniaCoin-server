@@ -31,7 +31,11 @@ const app: Application = express();
 app.use(cors(CORS_OPTIONS));
 app.use(urlencoded({ extended: true }));
 app.use(express.json());
-app.use(morgan('dev'));
+// app.use(morgan('dev'));
+
+setTimeout(() => {
+  pubnub.broadcast();
+}, 1000);
 
 // FIXME endpoint name /api/v1/<name>/
 app.use('/api/v1/auth', authRouter);
@@ -49,11 +53,18 @@ connectDb();
 const syncBlockchain = async () => {
   try {
     // FIXME change name and change routes after
-    const response = await fetch(`${ROOT_NODE}/api/v1/blockchain`);
-
+    const response = await fetch(`${ROOT_NODE}/api/v1/blockchain`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
     if (response.ok) {
       const { data } = await response.json();
-      blockchain.replaceChain(data);
+      blockchain.replaceChain(data.chain);
+
+      // FIXME make sure pending transactions are synced too
+      // blockchain.pendingTransactions = data.pendingTransactions;
     } else {
       console.error('Failed to sync blockchain: Server response not OK');
     }
@@ -64,6 +75,7 @@ const syncBlockchain = async () => {
 
 const server = app.listen(NODE_PORT, () => {
   console.log(`Server is listening at port ${NODE_PORT}`);
+  console.log(NODE_PORT, PORT);
   if (NODE_PORT !== PORT) {
     syncBlockchain();
   }

@@ -2,12 +2,13 @@ import { Request, Response, NextFunction } from 'express';
 import { blockchain, pubnub } from '../server.js';
 import { BaseError, NotFoundError } from '../models/BaseErrorModel.js';
 
-const addBlock = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const block = await blockchain.createBlock();
-    pubnub.broadcast();
+// BUG something happens if we dont have index with -1 (ERR: Invalid count value: -1)
+const addBlock = (req: Request, res: Response, next: NextFunction) => {
+  const block = blockchain.createBlock();
+  res.status(201).json({ success: true, statusCode: 201, data: block });
+  pubnub.broadcast();
 
-    res.status(201).json({ success: true, statusCode: 201, data: block });
+  try {
   } catch (err) {
     next(new BaseError(`Error adding block: ${req.body}`, 500));
   }

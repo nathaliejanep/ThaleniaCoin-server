@@ -1,6 +1,7 @@
 import { GENESIS_DATA, DIFFICULTY, MINE_RATE } from '../config/settings.js';
 import IBlock from '../interfaces/IBlock.js';
 import IBlockchain from '../interfaces/IBlockchain.js';
+import createHash from '../utils/crypto-lib.js';
 import Block from './Block.js';
 
 class Blockchain implements IBlockchain {
@@ -30,6 +31,7 @@ class Blockchain implements IBlockchain {
     const data = this.pendingTransactions;
 
     const { nonce, difficulty, hash } = this.proofOfWork(data);
+
     const newBlock = new Block(
       timestamp,
       index,
@@ -65,9 +67,12 @@ class Blockchain implements IBlockchain {
     do {
       nonce++;
       timestamp = Date.now();
-      difficulty = this.adjustDifficulty(prevBlock, Date.now());
-      hash = Block.createHash(
+
+      difficulty = this.adjustDifficulty(prevBlock, timestamp);
+
+      hash = this.calculateHash(
         timestamp,
+        prevBlock.index + 1,
         prevBlock.hash,
         data,
         nonce,
@@ -79,36 +84,53 @@ class Blockchain implements IBlockchain {
   }
 
   isValidChain(chain: Block[]): boolean {
-    if (JSON.stringify(chain[0]) !== JSON.stringify(Block.genesis)) {
+    if (JSON.stringify(chain[0]) !== JSON.stringify(GENESIS_DATA)) {
+      console.log('genesis block is not the same');
       return false;
     }
 
     // Loop through blockchain
     for (let i = 1; i < chain.length; i++) {
-      const currentBlock = chain[i];
-      const previousBlock = chain[i - 1];
+      const block = chain[i];
+      const previousBlock = this.getPrevBlock();
+      // const previousBlock = chain[i - 1];
 
-      if (
-        currentBlock.hash !==
-        Block.createHash(
-          currentBlock.timestamp,
-          currentBlock.previousHash,
-          currentBlock.data,
-          currentBlock.nonce,
-          currentBlock.difficulty
-        )
-      ) {
+      const hash = this.calculateHash(
+        block.timestamp,
+        block.index,
+        block.previousHash,
+        block.data,
+        block.nonce,
+        block.difficulty
+      );
+
+      // BUG fix this
+      // if (hash !== block.hash) {
+      //   console.log('----calculated hash----', hash);
+      //   console.log('----block hash----', block.hash);
+      //   console.log('hash is not the same');
+      //   return false;
+      // }
+
+      if (block.previousHash !== previousBlock.hash) {
+        console.log('previous hash is not the same');
         return false;
       }
-
-      if (currentBlock.previousHash !== previousBlock.hash) return false;
     }
+    console.log('chain is valid');
     return true;
   }
 
   replaceChain(newChain: Block[]): void {
-    if (newChain.length <= this.chain.length) return;
-    if (!this.isValidChain(newChain)) return;
+    if (newChain.length <= this.chain.length) {
+      console.log('received chain is not longer than the current chain');
+      return;
+    }
+    if (!this.isValidChain(newChain)) {
+      console.log('received chain is not valid');
+      return;
+    }
+    console.log('replaces chain');
     this.chain = newChain;
   }
 
@@ -118,6 +140,24 @@ class Blockchain implements IBlockchain {
     return timestamp + MINE_RATE > timeNow ? difficulty + 1 : difficulty - 1;
   }
 
+  private calculateHash(
+    timestamp: number,
+    index: number,
+    prevHash: string,
+    data: string[],
+    nonce: number,
+    difficulty: number
+  ) {
+    const stringToHash =
+      timestamp.toString() +
+      index.toString() +
+      prevHash +
+      JSON.stringify(data).toString() +
+      nonce.toString() +
+      difficulty.toString();
+
+    return createHash(stringToHash);
+  }
   private getPrevBlock(): Block {
     return this.chain[this.chain.length - 1];
   }

@@ -7,6 +7,7 @@ interface IPortMessage {
   address: number; // Assuming this is a port number
 }
 
+// FIXME move to settings
 const CHANNELS = {
   BLOCKCHAIN: 'BLOCKCHAIN',
   NODES: 'NODES',
@@ -30,7 +31,21 @@ class PubNubServer {
     this.nodePort = nodePort;
     this.pubnub = new Pubnub(credentials as PubnubConfig);
     this.subscribeChannels();
+    this.pubnub.addListener(this.listener());
     this.broadcastNodeDetails();
+  }
+
+  // TODO create parameters to keep DRY
+  broadcast() {
+    try {
+      this.pubnub.publish({
+        channel: CHANNELS.BLOCKCHAIN,
+        message: JSON.stringify(this.blockchain.chain),
+      });
+      console.log('Successfully published blockchain data');
+    } catch (err) {
+      console.error(`Failed to publish blockchain data, error: ${err}`);
+    }
   }
 
   broadcastNodeDetails() {
@@ -46,19 +61,26 @@ class PubNubServer {
   }
 
   getNodes(): any[] {
-    return this.nodes; // Adjust return type as per your nodes implementation
+    return this.nodes; // FIXME Adjust return type
   }
 
-  broadcast() {
-    try {
-      this.pubnub.publish({
-        channel: CHANNELS.BLOCKCHAIN,
-        message: JSON.stringify(this.blockchain.chain),
-      });
-      console.log('Successfully published blockchain data');
-    } catch (err) {
-      console.error(`Failed to publish blockchain data, error: ${err}`);
-    }
+  listener() {
+    return {
+      message: (msgObject: any) => {
+        const { channel, message } = msgObject;
+        const newChain = JSON.parse(message);
+        // console.log(newChain);
+
+        console.log(
+          `Medddelande mottagits på kanal: ${channel}. `
+          // meddelande: ${message}`
+        );
+
+        if (channel === CHANNELS.BLOCKCHAIN) {
+          this.blockchain.replaceChain(newChain);
+        }
+      },
+    };
   }
 
   subscribeChannels() {
@@ -67,24 +89,6 @@ class PubNubServer {
     } catch (err) {
       console.error(`Failed to subscribe to channels, error: ${err}`);
     }
-  }
-
-  listener() {
-    return {
-      message: (msgObject: any) => {
-        const { channel, message } = msgObject;
-        const newChain = JSON.parse(message);
-        console.log(newChain);
-
-        console.log(
-          `Medddelande mottagits på kanal: ${channel}. meddelande: ${message}`
-        );
-
-        if (channel === CHANNELS.BLOCKCHAIN) {
-          this.blockchain.replaceChain(newChain);
-        }
-      },
-    };
   }
 }
 

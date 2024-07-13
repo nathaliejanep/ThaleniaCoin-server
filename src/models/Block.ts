@@ -55,22 +55,30 @@ class Block implements IBlock {
 
   // LEARN delve into get
   static genesis() {
-    return new Block(Date.now(), 0, '0', 'genesis-hash', [], 0, DIFFICULTY);
-  }
-  static createHash(
-    timestamp: number,
-    prevHash: string,
-    data: any,
-    nonce: number,
-    difficulty: number
-  ): string {
-    return (
-      timestamp.toString() +
-      prevHash +
-      data +
-      nonce.toString() +
-      difficulty.toString()
+    return new Block(
+      GENESIS_DATA.timestamp,
+      GENESIS_DATA.index,
+      GENESIS_DATA.previousHash,
+      GENESIS_DATA.hash,
+      GENESIS_DATA.data,
+      GENESIS_DATA.nonce,
+      GENESIS_DATA.difficulty
     );
   }
+  // static createHash(
+  //   timestamp: number,
+  //   prevHash: string,
+  //   data: any,
+  //   nonce: number,
+  //   difficulty: number
+  // ): string {
+  //   return (
+  //     timestamp.toString() +
+  //     prevHash +
+  //     data +
+  //     nonce.toString() +
+  //     difficulty.toString()
+  //   );
+  // }
 }
 export default Block;

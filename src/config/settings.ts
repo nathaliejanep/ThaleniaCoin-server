@@ -7,16 +7,16 @@ const CORS_OPTIONS = {
 };
 
 const MINE_RATE = 1000;
-const DIFFICULTY = 3;
+const DIFFICULTY = 2;
 
 const GENESIS_DATA: IBlock = {
   timestamp: 1,
   index: 0,
-  data: ['genesis block'],
   previousHash: '0',
   hash: '0',
+  data: ['genesis block'],
   nonce: 0,
   difficulty: +DIFFICULTY,
 };
 
-export { MINE_RATE ,CORS_OPTIONS, GENESIS_DATA, DIFFICULTY };
+export { MINE_RATE, CORS_OPTIONS, GENESIS_DATA, DIFFICULTY };
