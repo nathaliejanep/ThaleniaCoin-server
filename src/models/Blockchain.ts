@@ -3,6 +3,9 @@ import IBlock from '../interfaces/IBlock.js';
 import IBlockchain from '../interfaces/IBlockchain.js';
 import createHash from '../utils/crypto-lib.js';
 import Block from './Block.js';
+import BlockModel from './BlockModel.js';
+import BlockSchema from './BlockModel.js';
+import TransactionModel from './TransactionModel.js';
 
 class Blockchain implements IBlockchain {
   chain: Block[];
@@ -11,14 +14,21 @@ class Blockchain implements IBlockchain {
   constructor() {
     this.chain = [Block.genesis()];
     this.pendingTransactions = [];
+    this.loadBlockchainDb();
     // RECHECK: chekc this structure if i want like this
     // this.currentTransactions =[];
     // this.nodes =[]
     // this.io=io
   }
 
-  addTransaction(transaction: any): number {
+  async addTransaction(transaction: any): Promise<number> {
     this.pendingTransactions.push(transaction);
+
+    const txModel = new TransactionModel(transaction);
+    await txModel.save();
+    // TODO
+    // pubnub.broadcastTransaction(transaction);
+
     // TODO should this really return?
     return this.getPrevBlock().index + 1;
   }
@@ -44,6 +54,10 @@ class Blockchain implements IBlockchain {
 
     this.chain.push(newBlock);
     this.pendingTransactions = [];
+
+    // TODO delete previous blocks from mongodb?
+    const blockModel = new BlockSchema(newBlock);
+    await blockModel.save();
     return newBlock;
   }
 
@@ -55,6 +69,26 @@ class Blockchain implements IBlockchain {
       }
     }
     return transactions;
+  }
+
+  async loadBlockchainDb(): Promise<void> {
+    try {
+      const blocks = await BlockModel.find().sort({ index: 1 });
+
+      this.chain = blocks.map((block) => {
+        return new Block(
+          block.timestamp,
+          block.index,
+          block.previousHash,
+          block.hash,
+          block.data,
+          block.nonce,
+          block.difficulty
+        );
+      });
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   // mineBlock
@@ -121,7 +155,7 @@ class Blockchain implements IBlockchain {
     return true;
   }
 
-  replaceChain(newChain: Block[]): void {
+  async replaceChain(newChain: Block[]): Promise<void> {
     if (newChain.length <= this.chain.length) {
       console.log('received chain is not longer than the current chain');
       return;
@@ -132,6 +166,9 @@ class Blockchain implements IBlockchain {
     }
     console.log('replaces chain');
     this.chain = newChain;
+
+    await BlockModel.deleteMany({});
+    await BlockModel.insertMany(this.chain);
   }
 
   // -------------------- PRIVATE -------------------- //
