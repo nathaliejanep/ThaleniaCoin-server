@@ -4,11 +4,12 @@ import {
   getTransactionById,
   getTransactions,
 } from '../controllers/transaction-controller.js';
+import { protect } from '../middleware/auth.security.js';
 
 const router = express.Router();
 
-router.route('/').get(getTransactions);
-router.route('/:id').get(getTransactionById);
-router.route('/add').post(createTransaction);
+router.get('/', getTransactions);
+router.get('/:id', getTransactionById);
+router.post('/add', protect, createTransaction);
 
 export default router;

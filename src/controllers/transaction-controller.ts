@@ -8,14 +8,27 @@ const createTransaction = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { amount, sender, recipient } = req.body;
-  if (!amount || !sender || !recipient) {
+  const { amount, recipient } = req.body;
+
+  const { publicKey } = req.currentUser;
+
+  if (!publicKey) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  if (!amount || !recipient) {
     return res
       .status(400)
       .json({ error: 'Transaction details are incomplete' });
   }
+
   try {
-    const newTx = new Transaction({ amount, sender, recipient });
+    const newTx = new Transaction({
+      amount,
+      sender: publicKey,
+      recipient,
+    });
+
     blockchain.addTransaction(newTx);
     res.status(201).json({ success: true, statusCode: 201, data: newTx });
   } catch (err) {

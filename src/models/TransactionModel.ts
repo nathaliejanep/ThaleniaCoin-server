@@ -3,9 +3,10 @@ import mongoose, { Schema } from 'mongoose';
 import IBlock from '../interfaces/IBlock.js';
 
 const TransactionSchema = new Schema({
+  // sender: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   sender: String,
-  recipient: String,
-  amount: Number,
+  recipient: { type: String, required: true },
+  amount: { type: Number, required: true },
   timestamp: { type: Date, default: Date.now },
 });
 
