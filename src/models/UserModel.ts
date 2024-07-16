@@ -41,12 +41,7 @@ const UserSchema = new Schema<IUser>({
 
   publicKey: {
     type: String,
-    default: publicKey,
-  },
-
-  privateKey: {
-    type: String,
-    default: privateKey,
+    required: [true, 'Public key is required'],
   },
 
   resetPasswordToken: String,

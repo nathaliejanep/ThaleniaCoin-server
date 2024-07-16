@@ -4,6 +4,8 @@ import { generateKeyPairSync } from 'crypto';
  * Generates a public-private key pair
  * @returns {Object} An object containing the public and private keys
  */
+
+// FIXME see if we should use this or not
 const generateKeyPair = () => {
   const { publicKey, privateKey } = generateKeyPairSync('rsa', {
     modulusLength: 2048,

@@ -7,6 +7,7 @@ import Token from '../models/token.model.js';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import sendEmail from '../utils/sendEmail.js';
+import Wallet from '../models/Wallet.js';
 
 const registerUser = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -26,9 +27,16 @@ const registerUser = asyncHandler(
         new BaseError('Password must be at least 8 characters long', 400)
       );
     }
+    const userWallet = new Wallet();
+    const { publicKey } = userWallet;
 
-    const newUser = await User.create({ name, email, password, role });
-
+    const newUser = await User.create({
+      name,
+      email,
+      password,
+      role,
+      publicKey,
+    });
     sendToken(newUser, 201, res);
   }
 );
@@ -52,6 +60,8 @@ const loginUser = asyncHandler(
         : await sendToken(user, 200, res);
 
       req.currentUser = user;
+
+      console.log(user);
     }
   }
 );
@@ -135,7 +145,7 @@ const resetPassword = asyncHandler(
       token as string,
       passwordResetToken?.token as string
     );
-  
+
     !isValid && next(new BaseError('Invalid or expired reset token', 400));
 
     // OPTIMIZE - Keep it DRY, might be using this in other files
