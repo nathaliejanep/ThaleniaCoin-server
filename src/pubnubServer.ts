@@ -1,5 +1,6 @@
 import Pubnub, { PubnubConfig } from 'pubnub';
 import dotenv from 'dotenv';
+import { transactionPool } from './server.js';
 
 dotenv.config();
 
@@ -10,6 +11,7 @@ interface IPortMessage {
 // FIXME move to settings
 const CHANNELS = {
   BLOCKCHAIN: 'BLOCKCHAIN',
+  TRANSACTION: 'TRANSACTION',
   NODES: 'NODES',
 };
 
@@ -20,14 +22,25 @@ const credentials = {
   userId: 'dev-user',
 };
 
+// TYPE for parameters
 class PubNubServer {
   private blockchain: any;
+  private transactionPool: any;
+  private wallet: any;
   private nodePort: number;
   private pubnub: any;
   private nodes: any[] = []; // FIXME type: number?
 
-  constructor(blockchain: any, nodePort: number) {
+  // FIXME change constructor to take in {}
+  constructor(
+    blockchain: any,
+    transactionPool: any,
+    wallet: any,
+    nodePort: number
+  ) {
     this.blockchain = blockchain;
+    this.transactionPool = transactionPool;
+    this.wallet = wallet;
     this.nodePort = nodePort;
     this.pubnub = new Pubnub(credentials as PubnubConfig);
     this.subscribeChannels();
@@ -35,7 +48,7 @@ class PubNubServer {
     this.broadcastNodeDetails();
   }
 
-  // TODO create parameters to keep DRY
+  // FIXME use this.publish to keep DRY
   broadcast() {
     try {
       this.pubnub.publish({
@@ -46,6 +59,13 @@ class PubNubServer {
     } catch (err) {
       console.error(`Failed to publish blockchain data, error: ${err}`);
     }
+  }
+
+  broadcastTransaction(transaction: any) {
+    this.publish({
+      channel: CHANNELS.TRANSACTION,
+      message: JSON.stringify(transaction),
+    });
   }
 
   broadcastNodeDetails() {
@@ -69,7 +89,6 @@ class PubNubServer {
       message: (msgObject: any) => {
         const { channel, message } = msgObject;
         const newChain = JSON.parse(message);
-        // console.log(newChain);
 
         console.log(
           `Medddelande mottagits på kanal: ${channel}. `
@@ -78,9 +97,24 @@ class PubNubServer {
 
         if (channel === CHANNELS.BLOCKCHAIN) {
           this.blockchain.replaceChain(newChain);
+          this.transactionPool.clearBlockTransactions({ chain: newChain });
+        }
+
+        if (channel === CHANNELS.TRANSACTION) {
+          if (
+            !this.transactionPool.transactionExist({
+              address: this.wallet.publicKey,
+            })
+          ) {
+            this.transactionPool.addTransaction(newChain);
+          }
         }
       },
     };
+  }
+
+  publish({ channel, message }: { channel: string; message: string }) {
+    this.pubnub.publish({ channel, message });
   }
 
   subscribeChannels() {

@@ -12,6 +12,8 @@ import { CORS_OPTIONS } from './config/settings.js';
 import Blockchain from './models/Blockchain.js';
 import PubNubServer from './pubnubServer.js';
 import { BaseError } from './models/BaseErrorModel.js';
+import TransactionPool from './models/TransactionPool.js';
+import Wallet from './models/Wallet.js';
 
 dotenv.config();
 
@@ -24,14 +26,21 @@ let NODE_PORT =
     : PORT;
 
 export const blockchain = new Blockchain();
-export const pubnub = new PubNubServer(blockchain, NODE_PORT);
+export const transactionPool = new TransactionPool();
+export const wallet = new Wallet();
+export const pubnub = new PubNubServer(
+  blockchain,
+  transactionPool,
+  wallet,
+  NODE_PORT
+);
 
 const app: Application = express();
 
 app.use(cors(CORS_OPTIONS));
 app.use(urlencoded({ extended: true }));
 app.use(express.json());
-// app.use(morgan('dev'));
+app.use(morgan('dev'));
 
 setTimeout(() => {
   pubnub.broadcast();
@@ -40,7 +49,7 @@ setTimeout(() => {
 // FIXME endpoint name /api/v1/<name>/
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/blockchain', blockchainRouter);
-app.use('/api/v1/transactions', transactionRouter);
+app.use('/api/v1/wallet', transactionRouter);
 app.use('/api/v1/nodes', pubnubRouter);
 
 app.use(ErrorHandler);
@@ -53,6 +62,7 @@ connectDb();
 const syncBlockchain = async () => {
   try {
     // FIXME change name and change routes after
+    // TODO Sync transactions
     const response = await fetch(`${ROOT_NODE}/api/v1/blockchain`, {
       method: 'GET',
       headers: {
@@ -64,7 +74,6 @@ const syncBlockchain = async () => {
       blockchain.replaceChain(data.chain);
 
       // FIXME make sure pending transactions are synced too
-      // blockchain.pendingTransactions = data.pendingTransactions;
     } else {
       console.error('Failed to sync blockchain: Server response not OK');
     }
@@ -75,7 +84,6 @@ const syncBlockchain = async () => {
 
 const server = app.listen(NODE_PORT, () => {
   console.log(`Server is listening at port ${NODE_PORT}`);
-  console.log(NODE_PORT, PORT);
   if (NODE_PORT !== PORT) {
     syncBlockchain();
   }

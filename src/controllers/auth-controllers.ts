@@ -135,8 +135,7 @@ const resetPassword = asyncHandler(
       token as string,
       passwordResetToken?.token as string
     );
-    console.log(token);
-    console.log(passwordResetToken?.token);
+  
     !isValid && next(new BaseError('Invalid or expired reset token', 400));
 
     // OPTIMIZE - Keep it DRY, might be using this in other files

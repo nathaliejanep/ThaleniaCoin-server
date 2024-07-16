@@ -2,10 +2,13 @@ import { Request, Response, NextFunction } from 'express';
 import { blockchain, pubnub } from '../server.js';
 import { BaseError, NotFoundError } from '../models/BaseErrorModel.js';
 
-// BUG something happens if we dont have index with -1 (ERR: Invalid count value: -1)
+// RENAME mineBlock
 const addBlock = (req: Request, res: Response, next: NextFunction) => {
-  const block = blockchain.createBlock();
+  const { data } = req.body;
+  const block = blockchain.createBlock({ data });
+
   res.status(201).json({ success: true, statusCode: 201, data: block });
+
   pubnub.broadcast();
 
   try {
@@ -61,7 +64,7 @@ const getBlockchain = async (
       statusCode: 200,
       data: {
         chain: blockchain.chain,
-        pendingTransactions: blockchain.pendingTransactions,
+        // pendingTransactions: blockchain.pendingTransactions,
       },
     });
   } catch (err) {

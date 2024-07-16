@@ -1,5 +1,7 @@
-import { DIFFICULTY, GENESIS_DATA } from '../config/settings.js';
+import { DIFFICULTY, GENESIS_DATA, MINE_RATE } from '../config/settings.js';
 import IBlock from '../interfaces/IBlock.js';
+import { blockchain } from '../server.js';
+import { createHash } from '../utils/crypto-lib.js';
 class Block implements IBlock {
   timestamp;
   index;
@@ -9,21 +11,29 @@ class Block implements IBlock {
   nonce;
   difficulty;
 
-  constructor(
-    timestamp: number,
-    index: number,
-    previousHash: string,
-    hash: string,
-    data: Array<any>, // FIXME <Transaction> or Transaction[]
-    nonce: number,
-    difficulty: number
-  ) {
+  constructor({
+    timestamp,
+    index,
+    previousHash,
+    hash,
+    data,
+    nonce,
+    difficulty,
+  }: {
+    timestamp: number;
+    index: number;
+    previousHash: string;
+    hash: string;
+    data: Array<any>; // TYPE <Transaction> or Transaction[]
+    nonce: number;
+    difficulty: number;
+  }) {
     this.timestamp = timestamp;
     this.index = index;
     this.previousHash = previousHash;
     this.hash = hash;
     this.data = data;
-    this.nonce = 0; // RECHECK check if should be nonce or 0
+    this.nonce = nonce; // RECHECK check if should be nonce or 0
     this.difficulty = difficulty;
     // this.difficulty = difficulty || +process.env.INITIAL_DIFFICULTY;
   }
@@ -39,46 +49,67 @@ class Block implements IBlock {
     `;
   }
 
-  // static get genesis(): Block {
-  //   return new this(
-  //     GENESIS_DATA.timestamp,
-  //     GENESIS_DATA.index,
-  //     GENESIS_DATA.previousHash,
-  //     GENESIS_DATA.hash,
-  //     GENESIS_DATA.transactions
-  //     GENESIS_DATA.nonce,
-  //     GENESIS_DATA.difficulty,
-  //   );
-  // }
+  // RECHECK if this is correct
+  static adjustDifficulty({
+    prevBlock,
+    timeNow,
+  }: {
+    prevBlock: Block;
+    timeNow: any; // TYPE number or date
+  }): number {
+    let { difficulty, timestamp } = prevBlock;
+    const targetBlockTime = timestamp + MINE_RATE;
+    difficulty = targetBlockTime > timeNow ? difficulty + 1 : difficulty - 1;
+    if (difficulty < 1) difficulty = 1;
 
-  static mineBlock(lastBlock: any, data: any) {}
+    return difficulty;
+  }
+  // static get genesis(): Block {
+  // }
 
   // LEARN delve into get
   static genesis() {
-    return new Block(
-      GENESIS_DATA.timestamp,
-      GENESIS_DATA.index,
-      GENESIS_DATA.previousHash,
-      GENESIS_DATA.hash,
-      GENESIS_DATA.data,
-      GENESIS_DATA.nonce,
-      GENESIS_DATA.difficulty
-    );
+    return new Block(GENESIS_DATA);
   }
-  // static createHash(
-  //   timestamp: number,
-  //   prevHash: string,
-  //   data: any,
-  //   nonce: number,
-  //   difficulty: number
-  // ): string {
-  //   return (
-  //     timestamp.toString() +
-  //     prevHash +
-  //     data +
-  //     nonce.toString() +
-  //     difficulty.toString()
-  //   );
-  // }
+
+  // TYPE boolean to return
+  static isValidHash(hash: string, difficulty: number): any {
+    return hash.substring(0, difficulty) === '0'.repeat(difficulty);
+  }
+
+  static mineBlock({ prevBlock, data }: { prevBlock: any; data: any }) {
+    const previousHash = prevBlock.hash;
+    const index = prevBlock.index + 1;
+
+    let timestamp;
+    let hash: string;
+    let { difficulty } = prevBlock;
+    let nonce = 0;
+
+    do {
+      nonce++;
+      timestamp = Date.now();
+      difficulty = this.adjustDifficulty({ prevBlock, timeNow: timestamp });
+
+      hash = createHash({
+        timestamp,
+        index: prevBlock.index + 1,
+        previousHash: prevBlock.hash,
+        data,
+        nonce,
+        difficulty,
+      });
+    } while (!this.isValidHash(hash, difficulty));
+
+    return new this({
+      timestamp,
+      index,
+      previousHash,
+      hash,
+      data,
+      nonce,
+      difficulty,
+    });
+  }
 }
 export default Block;

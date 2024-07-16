@@ -34,9 +34,7 @@ const restrict = (...allowedRoles: any) => {
   return (req: Request, res: Response, next: NextFunction) => {
     const { role } = req.currentUser;
 
-    console.log(req.currentUser);
     if (!allowedRoles.includes(role)) {
-      console.log('incl');
       return next(new BaseError(`The role ${role} is not Authorized`, 401));
     }
     next();
