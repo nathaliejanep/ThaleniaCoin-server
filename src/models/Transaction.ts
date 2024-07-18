@@ -125,7 +125,6 @@ class Transaction {
       timestamp: Date.now(),
       amount: sender.balance,
       address: sender.publicKey,
-      // BUG something wrong
       signature: sender.sign(outputMap),
     };
   }

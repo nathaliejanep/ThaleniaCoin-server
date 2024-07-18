@@ -11,12 +11,12 @@ import { protect } from '../middleware/auth.security.js';
 
 const router = express.Router();
 
-router.post('/add', createTransaction);
+router.post('/add', protect, createTransaction);
 router.get('/balance', getWalletBalance);
 router.get('/pending', getTransactionPool);
 router.get('/mine', mineTransactions);
 // ----------- OLD ---------- //
-// router.get('/', getTransactions);
+router.get('/', getTransactions);
 // router.post('/add', protect, createTransaction); //FIXME protect
 // router.get('/:id', getTransactionById);
 export default router;

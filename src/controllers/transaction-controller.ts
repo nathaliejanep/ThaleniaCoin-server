@@ -5,6 +5,7 @@ import { blockchain, pubnub, transactionPool, wallet } from '../server.js';
 import Wallet from '../models/Wallet.js';
 import Miner from '../models/Miner.js';
 import asyncHandler from '../middleware/asyncHandler.js';
+import TransactionModel from '../models/TransactionModel.js';
 
 // const { publicKey } = req.currentUser;
 
@@ -22,6 +23,9 @@ const createTransaction = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const { amount, recipient } = req.body;
 
+    //   // TODO
+    //   // pubnub.broadcastTransaction(transaction);
+
     let tx = transactionPool.transactionExist({
       address: wallet.publicKey,
     });
@@ -33,12 +37,14 @@ const createTransaction = asyncHandler(
         tx = wallet.createTransaction({ recipient, amount });
       }
     } catch (err) {
-      next(new BaseError(`Error creating transaction`, 500));
+      next(new BaseError(`Error creating transaction`, 400));
     }
-
+    console.log('-------TX', tx);
     transactionPool.addTransaction(tx);
     pubnub.broadcastTransaction(tx);
 
+    // const txModel = new TransactionModel(tx);
+    // await txModel.save();
     res.status(201).json({ success: true, statusCode: 201, data: tx });
   }
 );

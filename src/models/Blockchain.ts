@@ -13,14 +13,8 @@ class Blockchain implements IBlockchain {
 
   constructor() {
     this.chain = [Block.genesis()];
-    // this.pendingTransactions = [];
     this.loadBlockchainDb();
-    // RECHECK: chekc this structure if i want like this
-    // this.currentTransactions =[];
-    // this.nodes =[]
-    // this.io=io
   }
-
   // async addTransaction(transaction: any): Promise<number> {
   //   // this.pendingTransactions.push(transaction);
 
@@ -35,29 +29,6 @@ class Blockchain implements IBlockchain {
 
   // TYPE: for data?{}? Block?
   async createBlock({ data }: any): Promise<Block> {
-    // const prevBlock = this.getPrevBlock();
-    // const timestamp = Date.now();
-    // const index = prevBlock.index + 1;
-    // const previousHash = prevBlock.hash;
-    //  const data = this.pendingTransactions;
-
-    // const { nonce, difficulty, hash } = this.proofOfWork(data, prevBlock);
-
-    // const newBlock = new Block(
-    //   timestamp,
-    //   index,
-    //   previousHash,
-    //   hash,
-    //   data,
-    //   nonce,
-    //   difficulty
-    // );
-
-    // RECHECK if this works
-    // const prevBlock = this.getPrevBlock();
-
-    // BUG if we get bug tryy change
-    // const prevBlock = this.chain[this.chain.length - 1];
     const prevBlock = this.chain.at(-1);
     const newBlock = Block.mineBlock({ prevBlock, data });
 
@@ -69,19 +40,25 @@ class Blockchain implements IBlockchain {
     return newBlock;
   }
 
-  // getTransactions(): any[] {
-  //   let transactions = [];
-  //   for (let block of this.chain) {
-  //     for (let transaction of block.data) {
-  //       transactions.push(transaction);
-  //     }
-  //   }
-  //   return transactions;
-  // }
+  getTransactions(): any[] {
+    let transactions = [];
+    for (let block of this.chain) {
+      for (let transaction of block.data) {
+        transactions.push(transaction);
+      }
+    }
+    return transactions;
+  }
 
   async loadBlockchainDb(): Promise<void> {
     try {
       const blocks = await BlockModel.find().sort({ index: 1 });
+      const genesisBlock = Block.genesis();
+
+      if (blocks.length === 0) {
+        const initBlockModel = new BlockSchema(genesisBlock);
+        await initBlockModel.save();
+      }
 
       this.chain = blocks.map((block) => {
         return new Block({
@@ -99,33 +76,11 @@ class Blockchain implements IBlockchain {
     }
   }
 
-  // Mine block
-  // MOVED TO BLOCK
-  // proofOfWork(data: any, prevBlock: Block) {
-  //   // const prevBlock = this.getPrevBlock();
-  //   let timestamp, hash;
-  //   let { difficulty } = prevBlock;
-  //   let nonce = 0;
-
-  //   do {
-  //     nonce++;
-  //     timestamp = Date.now();
-  //     difficulty = this.adjustDifficulty(prevBlock, timestamp);
-  //     hash = this.calculateHash(
-  //       timestamp,
-  //       prevBlock.index + 1,
-  //       prevBlock.hash,
-  //       data,
-  //       nonce,
-  //       difficulty
-  //     );
-  //   } while (!this.isValidHash(hash, difficulty));
-
-  //   return { timestamp, hash, difficulty, nonce };
-  // }
-
   isValidChain(chain: Block[]): boolean {
     if (JSON.stringify(chain[0]) !== JSON.stringify(Block.genesis())) {
+      console.log('GENESIS_BLOCK', JSON.stringify(chain[0]));
+      console.log('GENESIS_DATA', JSON.stringify(Block.genesis()));
+
       console.log('genesis block is not the same');
       return false;
     }
@@ -176,20 +131,15 @@ class Blockchain implements IBlockchain {
     await BlockModel.insertMany(this.chain);
   }
 
+  // TODO const validateTransactionData
+  // - Need to update replaceChain for this too
+  // - Also need to set 'true' replaceChain in pubnub for channel.blockchain
+
   // -------------------- PRIVATE -------------------- //
-  // MOVED TO Block
-  // private adjustDifficulty(prevBlock: Block, timeNow: number): number {
-  //   let { difficulty, timestamp } = prevBlock;
-  //   return timestamp + MINE_RATE > timeNow ? difficulty + 1 : difficulty - 1;
-  // }
 
   private getPrevBlock(): Block {
     return this.chain[this.chain.length - 1];
   }
-  // MOVED TO Block
-  // private isValidHash(hash: string, difficulty: number): boolean {
-  //   return hash.substring(0, difficulty) === '0'.repeat(difficulty);
-  // }
 }
 
 export default Blockchain;

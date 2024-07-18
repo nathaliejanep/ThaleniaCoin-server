@@ -109,6 +109,8 @@ class PubNubServer {
             this.transactionPool.addTransaction(newChain);
           }
         }
+
+        if (channel === CHANNELS.NODES) this.nodes.push(newChain);
       },
     };
   }

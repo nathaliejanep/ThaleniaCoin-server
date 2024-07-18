@@ -3,19 +3,19 @@ import { blockchain, pubnub } from '../server.js';
 import { BaseError, NotFoundError } from '../models/BaseErrorModel.js';
 
 // RENAME mineBlock
-const addBlock = (req: Request, res: Response, next: NextFunction) => {
-  const { data } = req.body;
-  const block = blockchain.createBlock({ data });
+// const addBlock = (req: Request, res: Response, next: NextFunction) => {
+//   const { data } = req.body;
+//   const block = blockchain.createBlock({ data });
 
-  res.status(201).json({ success: true, statusCode: 201, data: block });
+//   res.status(201).json({ success: true, statusCode: 201, data: block });
 
-  pubnub.broadcast();
+//   pubnub.broadcast();
 
-  try {
-  } catch (err) {
-    next(new BaseError(`Error adding block: ${req.body}`, 500));
-  }
-};
+//   try {
+//   } catch (err) {
+//     next(new BaseError(`Error adding block: ${req.body}`, 500));
+//   }
+// };
 
 const getBlockById = async (
   req: Request,
@@ -72,4 +72,4 @@ const getBlockchain = async (
   }
 };
 
-export { addBlock, getBlockById, getLastBlock, getBlockchain };
+export { getBlockById, getLastBlock, getBlockchain };
