@@ -2,8 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { blockchain, pubnub } from '../server.js';
 import { BaseError, NotFoundError } from '../models/BaseErrorModel.js';
 
-// RENAME mineBlock
-// const addBlock = (req: Request, res: Response, next: NextFunction) => {
+// const mineBlock = (req: Request, res: Response, next: NextFunction) => {
 //   const { data } = req.body;
 //   const block = blockchain.createBlock({ data });
 
