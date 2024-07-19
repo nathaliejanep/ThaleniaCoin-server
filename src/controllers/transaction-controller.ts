@@ -13,24 +13,21 @@ import TransactionModel from '../models/TransactionModel.js';
 //   return res.status(401).json({ error: 'Unauthorized' });
 // }
 
-// // FIXME should this be inside try or not?
-// if (!amount || !recipient) {
-//   return res
-//     .status(400)
-//     .json({ error: 'Transaction details are incomplete' });
-// }
 const createTransaction = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const { amount, recipient } = req.body;
 
-    //   // TODO
-    //   // pubnub.broadcastTransaction(transaction);
+    // // FIXME should this be inside try or not?
 
     let tx = transactionPool.transactionExist({
       address: wallet.publicKey,
     });
 
     try {
+      if (!amount || !recipient) {
+        next(new BaseError(`Please enter all details`, 400));
+      }
+
       if (tx) {
         tx.update({ sender: wallet, recipient, amount });
       } else {
@@ -39,7 +36,6 @@ const createTransaction = asyncHandler(
     } catch (err) {
       next(new BaseError(`Error creating transaction`, 400));
     }
-    console.log('-------TX', tx);
     transactionPool.addTransaction(tx);
     pubnub.broadcastTransaction(tx);
 

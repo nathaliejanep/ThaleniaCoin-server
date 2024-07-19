@@ -68,7 +68,6 @@ const loginUser = asyncHandler(
 
 const getMe = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
-    // FIXME - Check if we need populate and how to send req.user.id
     const id = req.currentUser;
 
     if (!id) {

@@ -34,7 +34,6 @@ class Blockchain implements IBlockchain {
 
     this.chain.push(newBlock);
 
-    // TODO delete previous blocks from mongodb?
     const blockModel = new BlockSchema(newBlock);
     await blockModel.save();
     return newBlock;

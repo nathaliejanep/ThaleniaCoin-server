@@ -33,9 +33,8 @@ class Block implements IBlock {
     this.previousHash = previousHash;
     this.hash = hash;
     this.data = data;
-    this.nonce = nonce; // RECHECK check if should be nonce or 0
+    this.nonce = nonce; 
     this.difficulty = difficulty;
-    // this.difficulty = difficulty || +process.env.INITIAL_DIFFICULTY;
   }
 
   toString(): string {
@@ -64,8 +63,7 @@ class Block implements IBlock {
 
     return difficulty;
   }
-  // static get genesis(): Block {
-  // }
+
 
   // LEARN delve into get
   static genesis() {
@@ -73,7 +71,7 @@ class Block implements IBlock {
   }
 
   // TYPE boolean to return
-  static isValidHash(hash: string, difficulty: number): any {
+  static isValidHash(hash: string, difficulty: number): boolean {
     return hash.substring(0, difficulty) === '0'.repeat(difficulty);
   }
 

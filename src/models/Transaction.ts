@@ -92,7 +92,7 @@ class Transaction {
 
   // TODO make private if works
   // Creates outputMap for 'regular' transactions
-  createMap({
+  private createMap({
     sender,
     recipient,
     amount,
@@ -112,7 +112,7 @@ class Transaction {
   }
 
   // Creates input for 'regular' transactions
-  createInput({
+  private createInput({
     sender,
     outputMap,
   }: {
